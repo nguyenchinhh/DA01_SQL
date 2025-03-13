@@ -72,9 +72,44 @@ HAVING count(payment_id) > 1
 ORDER BY avg_amount DESC 
 
 
+-- 7.Mathematics operations & function
+-- TOAN TU VA HAM SO HOC
+SELECT film_id,
+	rental_rate,
+	ROUND(rental_rate *1.1,2) AS retal_rate_new,
+	CEILING(rental_rate *1.1) AS retal_rate,
+	FLOOR(rental_rate *1.1) AS retal_rate
+FROM film
+	
+
+-- 8.Mathematics operations & functions Solution
+/*
+Quản lý của bạn đang nghĩ đến việc tăng giá cho những bộ phim thay thế cao. Vì vậy
+bạn nên tạo một danh sách các bộ phim có giá thuê ít hơn 4% chi phí thay thế.
+Tạo danh sách film_id đó cùng với tỷ lệ phần trăm (giá thuế/ chi phí thay thế) 
+được làm tròn đến 2 chữ số thập phân
+*/
+SELECT film_id,
+		rental_rate,
+		replacement_cost,
+		ROUND(rental_rate / replacement_cost, 2) * 100 AS percentage_thue
+FROM film
+WHERE ROUND(rental_rate / replacement_cost, 2) * 100 < 4
 
 
+-- 9. Tổng kết thứ tự thực hiện câu lệnh
+SELECT customer_id,
+	COUNT(*) AS total_record
+FROM payment
+WHERE payment_date >= '2020-01-30' 
+GROUP BY customer_id
+HAVING count(*) <= 15
+ORDER BY total_record DESC
+LIMIT 5
 
+=> SELECT - FROM - WHERE - GROUP BY - HAVING - ORDER BY - LIMIT
+
+-- 10. 
 
 
 
