@@ -119,6 +119,52 @@ GROUP BY customer_id,EXTRACT(WEEK FROM payment_date)
 ORDER BY total_amount DESC
 
 
+-- 8.TO CHAR
+SELECT 	
+	payment_date,
+	EXTRACT(year from payment_date),
+	TO_CHAR(payment_date, 'yyyy')
+FROM payment
+-- TO_CHAR(payment_date, format)
+
+-- 9.INTERVAL
+SELECT current_date, current_timestamp,
+	customer_id,
+	rental_date,
+	return_date,
+	EXTRACT(day FROM return_date - rental_date) * 24 
+	+ EXTRACT(hour FROM return_date - rental_date) ||' ' || 'giờ' 
+FROM rental
+-- current_date, current_timestamp
+
+
+-- Challenge 
+-- Bạn cần tạo danh sách tất cả thời gian đã thuê của khách hàng với customer_id 35.
+-- Ngoài ra bạn cần tìm hiểu khách hàng nào có thời gian thuê trung bình dài nhất?
+
+--Giải
+-- Bạn cần tạo danh sách tất cả thời gian đã thuê của khách hàng với customer_id 35.
+SELECT customer_id,
+		rental_date,
+		return_date,
+		return_date - rental_date
+FROM rental
+WHERE customer_id = 35
+
+-- Ngoài ra bạn cần tìm hiểu khách hàng nào có thời gian thuê trung bình dài nhất?
+SELECT customer_id,
+		-- AVG(return_date - rental_date),
+		ROUND(AVG(EXTRACT(day FROM return_date - rental_date) * 24 
+	+ EXTRACT(hour FROM return_date - rental_date)),3)  ||' ' || 'giờ' AS avg_rental_max
+FROM rental
+GROUP BY customer_id
+ORDER BY AVG(return_date - rental_date) DESC
+
+
+
+
+
+
 
 
 
