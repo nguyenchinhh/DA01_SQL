@@ -58,11 +58,70 @@ FROM customer
 SELECT 
 	email,
 	SUBSTRING(email FROM POSITION('.' IN email) + 1 FOR POSITION('@' IN email) - POSITION('.' IN email) - 1),
-	POSITION('.' IN email) ,
-	POSITION('@' IN email),
-	POSITION('.' IN email),
-	POSITION('@' IN email) - POSITION('.' IN email) 
+	-- POSITION('.' IN email) ,
+	-- POSITION('@' IN email),
+	-- POSITION('.' IN email),
+	-- POSITION('@' IN email) - POSITION('.' IN email) - 1
 FROM customer
+
+
+-- Challenge : 
+-- Giả sử bạn chỉ có địa chỉ email và họ khách hàng. Bạn cần trích xuất tên từ địa chỉ emai và nối nói với họ
+-- kết quả phải ở dạng: "Họ, Tên"
+-- cách 1
+SELECT email,
+		-- last_name,
+		-- POSITION('.' IN EMAIL),
+		LEFT(email,POSITION('.' IN EMAIL) - 1) || ',' || last_name
+FROM customer
+-- cách 2
+SELECT email,
+		SUBSTRING(email FROM 1 FOR POSITION ('.' IN email) - 1) as first_name,
+		SUBSTRING(email FROM 1 FOR POSITION ('.' IN email) - 1) || ',' || last_name AS full_name
+FROM customer
+
+
+-- 7. EXTRACT
+-- Năm 2020, có bao nhiêu đơn hàng cho thuê trong mỗi tháng
+SELECT 
+	EXTRACT(month FROM rental_date),
+	COUNT(*)
+FROM rental
+WHERE EXTRACT(year FROM rental_date) = '2020'
+GROUP BY EXTRACT(month FROM rental_date)
+
+--CHALLENGE
+-- Bạn cần phân tích các khoản thanh toán và tìm hiểu những điều sau:
+-- . THáng nào có tổng số tiền thanh toán cao nhất?
+-- . Ngày nào trong tuần có tổng số tiền thanh toán cao nhất (0 là chủ nhật)
+-- . Số tiền cao nhất mà một khách hàng đã chi tiêu trong một tuần là bao nhiêu?
+SELECT 
+	EXTRACT(month FROM payment_date) AS month_of_year,
+	SUM(amount) AS amount
+FROM payment
+GROUP BY EXTRACT(month FROM payment_date)
+ORDER BY amount DESC
+
+-- 2. Ngày nào trong tuần có tổng số tiền thanh toán cao nhất (0 là chủ nhật)
+
+SELECT 
+	EXTRACT(DOW FROM payment_date) AS day_of_week,
+	SUM(amount) AS amount
+FROM payment
+GROUP BY EXTRACT(DOW FROM payment_date)
+ORDER BY amount DESC
+-- 3.Số tiền cao nhất mà một khách hàng đã chi tiêu trong một tuần là bao nhiêu?
+SELECT customer_id,
+	EXTRACT(WEEK FROM payment_date) AS week_of_month,
+	SUM(amount) AS total_amount
+FROM payment
+GROUP BY customer_id,EXTRACT(WEEK FROM payment_date) 
+ORDER BY total_amount DESC
+
+
+
+
+
 
 
 
