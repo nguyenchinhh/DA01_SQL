@@ -57,6 +57,16 @@ FROM employees
 WHERE joining_date >= '2022-01-01' AND joining_date <= '2022-07-01'
 
 -- EX9: strataScratch position-of-letter-a.
+SELECT POSITION('a' IN first_name)
+FROM worker
+
+
+-- EX10: strataScratch Macedonian Vintages
+SELECT title,
+        REGEXP_REPLACE(title, '[^0-9]', '', 'g')::INTEGER AS extracted_number
+FROM winemag_p2 
+WHERE country = 'Macedonia'
+
 
 
 
