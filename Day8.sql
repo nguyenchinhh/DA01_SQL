@@ -146,8 +146,42 @@ FROM film
 GROUP BY category
 
 
+-- 9. COALESCE
+SELECT 
+	scheduled_departure,
+	actual_arrival,
+	COALESCE(actual_arrival, '2020-01-01'),
+	COALESCE(actual_arrival, scheduled_departure),
+	COALESCE(actual_arrival - scheduled_departure,'00:00:00')
+FROM flights
 
+-- 10. CAST
+SELECT 
+	scheduled_departure,
+	actual_arrival,
+	COALESCE(actual_arrival, '2020-01-01'),
+	COALESCE(actual_arrival, scheduled_departure),
+	COALESCE(CAST(actual_arrival - scheduled_departure AS VARCHAR),'Not arrived')
+FROM flights
 
+-- CAST
+-- string/number/ datetime
+-- string -> number(với string phải chứa chữ số, không được chứa a, b, c,...)
+SELECT *, 
+CAST(ticket_no AS bigint),
+-- number -> string
+CAST(amount AS VARCHAR)
+FROM ticket_flights;
+
+-- datetime ->string
+SELECT 
+	CAST(scheduled_departure AS VARCHAR)
+FROM flights
+	
+--
+SELECT 
+ROUND(CAST(SUM(item_count*order_occurences) / SUM(order_occurences) AS DECIMAL),1)
+FROM items_per_order
 
 
 
