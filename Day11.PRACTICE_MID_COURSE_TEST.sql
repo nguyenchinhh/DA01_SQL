@@ -1,6 +1,74 @@
+-- EX1: hackerrank-average-population-of-each-continent
+SELECT co.continent,
+        FLOOR(AVG(ci.population))
+FROM city AS ci
+JOIN country AS co
+ON ci.countrycode = co.code
+GROUP BY co.continent
+
+-- EX2: datalumwe-signup-confirmation-rate
+SELECT 
+    ROUND(COUNT(CASE
+        WHEN signup_action = 'Confirmed' THEN 1
+    END) * 1.0 / COUNT(*) ,2)
+FROM texts AS t 
+LEFT JOIN emails AS e 
+ON t.email_id = e.email_id
+
+
+-- EX3: 
+SELECT 
+    b.age_bucket,
+    ROUND(100 * SUM(CASE WHEN a.activity_type = 'send' THEN a.time_spent ELSE 0 END) 
+              / SUM(a.time_spent), 2) AS send_perc,
+    ROUND(100 * SUM(CASE WHEN a.activity_type = 'open' THEN a.time_spent ELSE 0 END) 
+              / SUM(a.time_spent), 2) AS open_perc
+FROM activities AS a
+LEFT JOIN age_breakdown AS b
+ON a.user_id = b.user_id
+WHERE a.activity_type != 'chat'
+GROUP BY b.age_bucket;
+
+-- EX4: 
 
 
 
+-- EX5 : leetcode-the-number-of-employees-which-report-to-each-employee
+SELECT m.employee_id,
+        m.name,
+        COUNT(DISTINCT e.employee_id) AS reports_count,
+        ROUND(AVG(e.age)) AS average_age
+FROM Employees AS e 
+INNER JOIN Employees AS m
+ON m.employee_id = e.reports_to 
+GROUP BY 1, 2
+ORDER BY m.employee_id	
+
+
+-- EX6: leetcode-list-the-products-ordered-in-a-period	
+SELECT p.product_name,
+        SUM(o.unit) AS unit
+FROM Products AS p
+INNER JOIN Orders AS o
+ON p.product_id = o.product_id 
+WHERE EXTRACT(YEAR FROM o.order_date) = 2020 AND EXTRACT(MONTH FROM o.order_date) = 2
+GROUP BY p.product_name
+HAVING  SUM(o.unit) >= 100
+
+	
+-- EX7: datalumwe-sql-page-with-no-likes
+SELECT a.page_id
+FROM pages AS a 
+LEFT JOIN page_likes AS b 
+ON a.page_id = b.page_id
+WHERE b.page_id IS NULL 
+GROUP BY a.page_id
+ORDER BY a.page_id 
+
+
+
+
+	
 -- MID COURSE
 /*
 Câu hỏi 1:
