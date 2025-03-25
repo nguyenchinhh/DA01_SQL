@@ -150,6 +150,67 @@ GROUP BY rating)
 
 
 
+-- 6.CTE
+
+-- CTEs
+/*Tìm khách hàng có nhiều hơn 30 hóa đơn, kết quả trả ra gồm các thông tin: mã KH, tênKH
+số lượng hóa đơn, tổng số tiền, thời gian thuê trung bình 
+*/
+WITH twt_total_payment AS (
+SELECT customer_id,
+	COUNT(payment_id) AS so_luong,
+	SUM(amount) AS so_tien
+FROM payment
+GROUP BY customer_id),
+twt_avg_rental_time AS (
+SELECT customer_id,
+	AVG(return_date - rental_date) AS rental_time
+FROM rental
+GROUP BY customer_id
+)
+SELECT a.customer_id, a.first_name, b.so_luong, b.so_tien,c.rental_time
+FROM customer AS a
+JOIN twt_total_payment AS b 
+ON a.customer_id = b.customer_id
+JOIN twt_avg_rental_time AS c
+ON c.customer_id = a.customer_id
+WHERE b.so_luong > 30;
+
+
+
+
+/*Tìm những hóa đơn có só tiền cao hơn số tiền trung bình của khác hàng đó chi tiêu trên mỗi hóa đơn 
+kết quả trả ra gồm các thông tin: mã KH, tênKH
+số lượng hóa đơn, số tiền, số tiền trung bình của khác hàng đó.
+*/
+WITH ex1 AS (
+SELECT customer_id, 
+		COUNT(payment_id) AS so_luong
+FROM payment 
+GROUP BY customer_id ),
+twt_avg_amount AS (
+SELECT customer_id, 
+	AVG(amount) AS avg_amount
+FROM payment 
+GROUP BY customer_id 
+)
+SELECT a.customer_id, a.first_name, b.so_luong, d.amount,  c.avg_amount
+FROM customer AS a 
+JOIN ex1 AS b ON a.customer_id = b.customer_id
+JOIN twt_avg_amount AS c ON c.customer_id = a.customer_id
+JOIN payment AS d ON d.customer_id = a.customer_id
+WHERE d.amount > c.avg_amount	
+
+
+
+
+
+
+
+
+
+
+
 
 
 
