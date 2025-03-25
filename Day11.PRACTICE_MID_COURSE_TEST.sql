@@ -16,7 +16,7 @@ LEFT JOIN emails AS e
 ON t.email_id = e.email_id
 
 
--- EX3: 
+-- EX3: datalemur-time-spent-snaps
 SELECT 
     b.age_bucket,
     ROUND(100 * SUM(CASE WHEN a.activity_type = 'send' THEN a.time_spent ELSE 0 END) 
@@ -29,8 +29,19 @@ ON a.user_id = b.user_id
 WHERE a.activity_type != 'chat'
 GROUP BY b.age_bucket;
 
--- EX4: 
+-- EX4: datalemur-supercloud-customer
+WITH cats_bought AS
+(
+SELECT customer_id, COUNT(DISTINCT product_category) AS cats_buy
+FROM customer_contracts
+INNER JOIN products
+USING(product_id)
+GROUP BY customer_id
+)
 
+SELECT customer_id
+FROM cats_bought
+WHERE cats_buy = (SELECT COUNT(DISTINCT product_category) FROM products)
 
 
 -- EX5 : leetcode-the-number-of-employees-which-report-to-each-employee
