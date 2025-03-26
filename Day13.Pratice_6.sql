@@ -16,6 +16,8 @@ FROM product
 WHERE ranking <= 2
 
 
+-- EX3: datalemur-frequent-callers
+
 
 
 
