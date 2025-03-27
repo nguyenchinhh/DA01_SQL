@@ -32,13 +32,27 @@ GROUP BY film_id
 HAVING COUNT(*) >= 3)
 
 -- Tìm những khách hàng đền từ California và đã chi tiêu nhiều hơn 100
+-- chưa có california
 SELECT customer_id, first_name, last_name, email FROM customer 
 WHERE customer_id IN (SELECT customer_id FROM payment
 group by customer_id
 having sum(amount) > 100 )
 
+-- cách 2: 
+SELECT * FROM customer
+SELECT * FROM address
+SELECT * FROM payment
 
+SELECT c.customer_id, c.first_name, c.last_name, c.email
+FROM customer c
+INNER JOIN address a
+ON c.address_id = a.address_id
+WHERE a.district = 'California'
+	AND customer_id IN (SELECT customer_id FROM payment
+GROUP BY customer_id
+HAVING SUM(amount) > 100)
 
+	
 
 -- 3.SUBQUERIES IN FROM 
 -- SUBQUERIES 
