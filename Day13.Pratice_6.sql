@@ -37,12 +37,29 @@ GROUP BY a.page_id
 ORDER BY a.page_id ASC
 
 
+-- EX5: datalemur-user-retention
+SELECT EXTRACT(month from event_date),
+        COUNT(DISTINCT user_id)
+FROM user_actions
+WHERE EXTRACT(month from event_date) = 7
+      AND user_id IN (SELECT user_id FROM user_actions WHERE EXTRACT(MONTH from event_date) = 6)
+GROUP BY 1
+ORDER BY 1, 2
 
 
+-- EX6: leetcode - monthly-transactions      
+SELECT 
+    CONCAT(EXTRACT(YEAR FROM trans_date), '-', LPAD(EXTRACT(MONTH FROM trans_date), 2, '0')) AS month,
+    country,
+    COUNT(*) AS trans_count,
+    COUNT(CASE WHEN state = 'approved' THEN 1 END) AS approved_count,
+    SUM(amount) AS trans_total_amount,
+    SUM(CASE WHEN state = 'approved' THEN amount ELSE 0 END) AS approved_total_amount
+FROM Transactions
+GROUP BY 1, 2;
 
 
-
-
+-- EX7: 
 
 
 
