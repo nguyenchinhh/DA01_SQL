@@ -219,7 +219,98 @@ WHERE d.amount > c.avg_amount
 
 
 
+-- 5 bài tập thêm
+-- 1. Tìm danh sách khách hàng đã từng thuê phim nhưng chưa từng thanh toán
+SELECT * FROM customer
+SELECT * FROM film
+SELECT * FROM rental
+SELECT * FROM payment
 
+SELECT * 
+FROM customer 
+WHERE customer_id IN (
+	SELECT customer_id FROM rental
+	WHERE customer_id NOT IN (SELECT customer_id FROM payment)
+)
+
+SELECT customer_id, first_name, last_name  
+FROM customer  
+WHERE customer_id IN (  
+    SELECT customer_id FROM rental  
+    WHERE customer_id NOT IN (SELECT customer_id FROM payment)  
+);
+
+
+
+-- 2. Tìm phim có số lần thuê nhiều nhất
+SELECT * FROM film
+SELECT * FROM rental
+SELECT * FROM inventory
+
+SELECT film_id,  title FROM film
+WHERE film_id IN (
+	SELECT film_id
+	FROM inventory
+	WHERE inventory_id IN (
+		SELECT inventory_id FROM rental
+		GROUP BY inventory_id
+		ORDER BY COUNT(*) DESC
+		LIMIT 1
+	)
+)
+
+
+-- 3. Tìm các thành phố có khách hàng nhưng không có cửa hàng
+SELECT * FROM city
+SELECT * FROM address
+
+SELECT city_id, city
+FROM city
+WHERE city_id IN (
+	SELECT city_id 
+	FROM address
+	WHERE address_id IN(
+		SELECT address_id FROM customer
+	)
+	AND city_id NOT IN(
+		SELECT city_id
+		FROM address
+		WHERE address_id IN(
+			SELECT address_id FROM store
+		)
+	)
+)
+
+
+SELECT city  
+FROM city  
+WHERE city_id IN (  
+    SELECT city_id FROM address WHERE address_id IN (SELECT address_id FROM customer)  
+)  
+AND city_id NOT IN (  
+    SELECT city_id FROM address WHERE address_id IN (SELECT address_id FROM store)  
+);
+
+-- 4. Tìm khách hàng đã thanh toán số tiền cao hơn mức thanh toán trung bình
+SELECT customer_id, first_name, last_name
+FROM customer
+WHERE customer_id IN (
+	SELECT customer_id
+	FROM payment
+	GROUP BY customer_id
+	HAVING SUM(amount) > (SELECT avg(amount) FROM payment)
+) 
+
+-- 5. Tìm các bộ phim không có trong bất kỳ kho (inventory) nào
+SELECT * FROM film 
+SELECT * FROM inventory
+
+SELECT * FROM film
+WHERE film_id NOT IN (
+	SELECT film_id
+	FROM inventory
+	GROUP BY film_id
+)
 
 
 
