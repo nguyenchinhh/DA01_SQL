@@ -180,7 +180,7 @@ SELECT payment_date,amount,
 		ROUND((amount - LAG(amount) OVER(ORDER BY payment_date)) / LAG(amount) OVER(ORDER BY payment_date) * 100,2) AS percentage_diff
 FROM ex
 
--- 10. Quiz
+-- 10. Quiz 90%
 
 
 
