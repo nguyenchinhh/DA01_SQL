@@ -52,10 +52,52 @@ WHERE tiv_2015 in (
 
 
 
+-- EX6: leetcode - department-top-three-salaries
+WITH ex1 AS (
+    SELECT departmentID,  name, salary, 
+            DENSE_RANK() OVER(PARTITION BY departmentID ORDER BY salary DESC) AS rank1
+    FROM Employee 
+   
+)
+SELECT d.name AS Department,e.name AS Employee, e.salary 
+FROM ex1 e
+JOIN Department AS d ON e.departmentID = d.id
+WHERE rank1 <= 3
+
+-- EX7: leetcode - last-person-to-fit-in-the-bus
+WITH ex1 AS (
+SELECT turn ,
+        person_id ,
+        person_name ,
+        SUM(weight) OVER(ORDER BY turn) AS total_weight
+FROM Queue 
+)
+SELECT person_name
+FROM ex1
+WHERE total_weight <= 1000
+ORDER BY total_weight DESC
+LIMIT 1
 
 
-
-
+-- EX8 : leetcode-product-price-at-a-given-date
+SELECT DISTINCT product_id, 10 AS price
+FROM products
+WHERE product_id NOT IN (
+    SELECT DISTINCT product_id
+    FROM Products 
+    WHERE change_date <= '2019-08-16'
+    ORDER BY product_id
+)
+UNION 
+SELECT product_id, new_price AS price
+FROM Products
+WHERE (product_id, change_date) IN (
+    SELECT product_id, MAX(change_date)
+    FROM Products
+    WHERE change_date <= '2019-08-16'
+    GROUP BY product_id
+    
+)
 
 
 
