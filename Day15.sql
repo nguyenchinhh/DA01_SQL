@@ -58,9 +58,64 @@ ORDER BY 1
 
 
 
+-- EX5: datalumer - rolling-average-tweets
+SELECT user_id,
+      tweet_date,
+      ROUND(AVG(tweet_count) OVER(PARTITION BY user_id ORDER BY tweet_date
+      ROWS BETWEEN 2 PRECEDING AND CURRENT ROW),2) AS avg_rank_3d
+FROM tweets
+
+--  EX6: datalumer- repeated-payments
+WITH payments AS (
+SELECT transaction_id,
+      merchant_id, 
+      credit_card_id,
+      amount,
+      EXTRACT(
+      EPOCH FROM 
+      transaction_timestamp - LAG(transaction_timestamp) OVER(PARTITION BY merchant_id, credit_card_id, amount 
+      ORDER BY transaction_timestamp)
+) / 60 AS minute_diff
+FROM transactions )
+
+SELECT COUNT(merchant_id) AS payment_count
+FROM payments
+WHERE minute_diff <= 10
+
+
+-- EX7: datalumer-sql-highest-grossing
+WITH product AS (
+SELECT category,
+        product,
+        SUM(spend) AS total_spend, RANK() OVER(
+          PARTITION BY category ORDER BY SUM(spend) DESC) AS ranking
+FROM product_spend 
+WHERE EXTRACT(year FROM date(transaction_date)) = 2022
+GROUP BY 1, 2)
+
+SELECT category, 
+        product, total_spend
+FROM product
+WHERE ranking <= 2
 
 
 
+
+-- EX8: datalumer-top-fans-rank
+WITH top_10 AS (
+SELECT a.artist_name,
+    DENSE_RANK() OVER(ORDER BY COUNT(s.song_id) DESC) AS rank1
+FROM artists AS a 
+JOIN songs AS s ON a.artist_id = s.artist_id
+JOIN global_song_rank AS g ON g.song_id = s.song_id
+WHERE g.rank <= 10
+GROUP BY 1
+)
+
+SELECT artist_name,
+      rank1
+FROM top_10
+WHERE  rank1 <= 5
 
 
 
