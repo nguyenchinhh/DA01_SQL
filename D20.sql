@@ -82,9 +82,21 @@ ORDER BY cohort_date)
 
 -- retension cohort
 select 
-100 * m1 / m1,
-100 * m2 / m1
+cohort_date,
+(100 - round(100.00 * m1 / m1,2)) || '%' as m1,
+(100 - round(100.00 * m2 / m1,2)) || '%' as m2,
+(100 - round(100.00 * m3 / m1,2)) || '%' as m3,
+(100 - round(100.00 * m4 / m1,2)) || '%' as m4,
+round(100.00 * m5 / m1,2) || '%' as m5,
+round(100.00 * m6 / m1,2) || '%' as m6,
+round(100.00 * m7 / m1,2) || '%' as m7,
+round(100.00 * m8 / m1,2) || '%' as m8,
+round(100.00 * m9 / m1,2) || '%' as m9,
+round(100.00 * m10 / m1,2) || '%' as m10,
+round(100.00 * m11 / m1,2) || '%' as m11,
+round(100.00 * m12 / m1,2) || '%' as m12
 from customer_cohort
+-- churn cohort
 
 
 
