@@ -1,3 +1,4 @@
+
 with ex1 as (
 select format_timestamp('%Y-%m',a.created_at) AS year_month,
        EXTRACT(YEAR FROM a.created_at) AS year,
@@ -30,88 +31,73 @@ select year_month,
 from ex1
 order by year_month )
 
+-- 2. Tạo retention cohort analysis theo tháng, theo dõi 3 tháng (index từ 1 đến 4)
 
+, customer_first_purchase AS (
+  SELECT 
+    user_id,
+    MIN(DATE(created_at)) AS first_purchase_date
+  FROM bigquery-public-data.thelook_ecommerce.orders
+  WHERE user_id IS NOT NULL
+  GROUP BY user_id
+),
 
- -- 2.Tạo retention cohort analysis.
+customer_orders_with_index AS (
+  SELECT 
+    o.user_id,
+    DATE(o.created_at) AS purchase_date,
+    FORMAT_TIMESTAMP('%Y-%m', o.created_at) AS purchase_month,
+    FORMAT_TIMESTAMP('%Y-%m', f.first_purchase_date) AS cohort_month,
+    DATE_DIFF(DATE(o.created_at), DATE(f.first_purchase_date), MONTH) + 1 AS index_month
+  FROM bigquery-public-data.thelook_ecommerce.orders o
+  JOIN customer_first_purchase f
+    ON o.user_id = f.user_id
+  WHERE o.user_id IS NOT NULL
+)
 
-WITH online_retail_convert AS (
-select invoiceno,
-stockcode,
-description,
-CAST(quantity AS int) as quantity,
-CAST(invoicedate AS timestamp) as invoicedate,
-CAST(unitpeice AS numeric) as unitpeice,
-customerid,
-country
-from online_retail
-where customerid <> ''
-and CAST(quantity AS int) > 0
-and CAST(unitpeice AS numeric) > 0)
+, filtered_index AS (
+  SELECT *
+  FROM customer_orders_with_index
+  WHERE index_month BETWEEN 1 AND 4  
+)
 
-, online_retail_main AS (
-select * from (
-select *,
-ROW_NUMBER() OVER(PARTITION BY invoiceno, stockcode, quantity ORDER BY invoicedate) as stt
-from online_retail_convert) as t
-where stt = 1 )
+, cohort_count AS (
+  SELECT 
+    cohort_month,
+    index_month,
+    COUNT(DISTINCT user_id) AS user_count
+  FROM filtered_index
+  GROUP BY cohort_month, index_month
+)
 
+, cohort_pivot AS (
+  SELECT 
+    cohort_month,
+    SUM(CASE WHEN index_month = 1 THEN user_count ELSE 0 END) AS m1,
+    SUM(CASE WHEN index_month = 2 THEN user_count ELSE 0 END) AS m2,
+    SUM(CASE WHEN index_month = 3 THEN user_count ELSE 0 END) AS m3,
+    SUM(CASE WHEN index_month = 4 THEN user_count ELSE 0 END) AS m4
+  FROM cohort_count
+  GROUP BY cohort_month
+)
 
-, online_retail_index AS (
-select 
-customerid,
-amount,
-TO_CHAR(first_purchase_date, 'yyyy-mm') as cohort_date,
-invoicedate,
-(extract('year' from invoicedate) - extract('year' from first_purchase_date)) * 12
-+ (extract('month' from invoicedate) - extract('month' from first_purchase_date)) + 1 as index
+-- churn cohort
+SELECT 
+  cohort_month,
+  (100 - ROUND(100.0 * m1 / m1, 2)) || '%' AS m1,
+  (100 - ROUND(100.0 * m2 / m1, 2)) || '%' AS m2,
+  (100 - ROUND(100.0 * m3 / m1, 2)) || '%' AS m3,
+  (100 - ROUND(100.0 * m4 / m1, 2)) || '%' AS m4
+FROM cohort_pivot
+ORDER BY cohort_month;
 
-from (
-select 
-customerid,
-unitpeice * quantity as amount,
-MIN(invoicedate) OVER(PARTITION BY customerid) as first_purchase_date,
-invoicedate
-from online_retail_main) as a)
-
-, xxx AS (
-select 
-cohort_date,
-index,
-COUNT(DISTINCT customerid) as cnt,
-SUM(amount) as revenue
-from online_retail_index
-group by cohort_date, index)
-
-/*Bước 3:
-pivot table ==> cohort chart
-*/
-
--- customer cohort
-,customer_cohort AS (
-select 
-cohort_date,
-SUM(case when index = 1 then cnt else 0 end) as "m1",
-SUM(case when index = 2 then cnt else 0 end) as "m2",
-SUM(case when index = 3 then cnt else 0 end) as "m3",
-SUM(case when index = 4 then cnt else 0 end) as "m4"
-from xxx
-GROUP BY cohort_date
-ORDER BY cohort_date)
-
--- retention cohort
-select cohort_date,
-round(100.00 * m1/m1,2) || '%' as m1,
-round(100.00 * m2/m1,2) || '%' as m2,
-round(100.00 * m3/m1,2) || '%' as m3,
-round(100.00 * m4/m1,2) || '%' as m4
-from customer_cohort
-
-
-
-
-select * from bigquery-public-data.thelook_ecommerce.order_items
-select * from bigquery-public-data.thelook_ecommerce.orders
-select * from bigquery-public-data.thelook_ecommerce.products
-select * from bigquery-public-data.thelook_ecommerce.users
+-- SELECT 
+--   cohort_month,
+--   ROUND(100.0 * m1 / m1, 2) || '%' AS m1,
+--   ROUND(100.0 * m2 / m1, 2) || '%' AS m2,
+--   ROUND(100.0 * m3 / m1, 2) || '%' AS m3,
+--   ROUND(100.0 * m4 / m1, 2) || '%' AS m4
+-- FROM cohort_pivot
+-- ORDER BY cohort_month;
 
 
